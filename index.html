@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- 
+TODO
+- link to Github pages
+- colours to distinguish bug/pr open/closed
+- full screen diagram
+- show entire diagram or split by group
+- filtering
+- display on right for more details
+-->
+
+<style>
+
+.links line {
+  stroke: #aaa;
+}
+
+.nodes circle {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+.nodes rect {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+.nodes ellipse {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+.nodes g {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+</style>
+<svg width="1200" height="800"></svg>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.3/d3.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))  // .distance(5)
+    // .force("charge", d3.forceManyBody().strength(0))
+    .force("collide", d3.forceCollide(15))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+d3.json("data2.json", function(error, graph) {
+  if (error) throw error;
+
+  var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(graph.links)
+    .enter().append("line");
+
+  // var node = svg.append("g")
+  //     .attr("class", "nodes")
+  //   .selectAll("circle")
+  //   .data(graph.nodes)
+  //   .enter().append("circle")
+  //     .attr("r", 5)
+  //     .style("fill", function(d) { if (d.state == "unknown") {return "#ccc"} else {return "#f00";}} )
+  //     .call(d3.drag()
+  //         .on("start", dragstarted)
+  //         .on("drag", dragged)
+  //         .on("end", dragended));
+
+/// START
+  var node = svg.append("g")
+  .attr("class", "nodes")
+  .selectAll(".node")
+  .data(graph.nodes)
+  .enter().append("g")
+  .attr("class", d => {
+     if (d.pull_request_html_url) {
+       return "pull node";
+     } else {
+       return "issue node";
+     }
+   })
+   .style("fill", function(d) { if (d.state == "unknown") {return "#ccc"} else {return "#f00";}} );
+  // .call(d3.drag()
+  //   .on("start", dragstarted)
+  //   .on("drag", dragged)
+  //   .on("end", dragended));
+
+ d3.selectAll(".pull").append("rect")
+  .attr("width", 10)
+  .attr("height", 10)
+  .attr("y", -5);
+
+  d3.selectAll(".issue").append("circle")
+  .attr("cx", 5)
+  .attr("r", 5);
+/// END
+
+
+
+    // simulation.force("haslinks", function(alpha) {
+    //   // console.log(graph.nodes.length);
+    //   for (var i = 0, len = graph.nodes.length; i < len; ++i) {
+    //     // console.log(n.id);
+    //     var n = graph.nodes[i];
+    //     k = 0.02 * alpha;
+    //     // console.log(k);
+    //     n.x -= (n.x - n.id/25) * k;
+    //     // n.y += (n.y - n.id/25) * k;
+    //   }
+    // } )
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    // node
+    //     .attr("cx", function(d) { return d.x; })
+    //     .attr("cy", function(d) { return d.y; });
+
+    node.attr("transform", function(d) {
+      return "translate(" + (d.x - 6) + "," + (d.y ) + ")";
+    });
+  }
+});
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart()
+  simulation.fix(d);
+}
+
+function dragged(d) {
+  simulation.fix(d, d3.event.x, d3.event.y);
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  simulation.unfix(d);
+}
+
+</script>
