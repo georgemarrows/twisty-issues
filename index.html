@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <meta charset="utf-8">
 <!-- 
 TODO
@@ -40,23 +41,77 @@ TODO
   stroke-width: 40px;
 }
 
+div#container {
+        height: 1000px;
+        width: 1000px;
+        border:2px solid #000;
+        overflow: scroll;
+      }
+svg {
+  height: 10000px;
+  width: 1000px;
+  border:1px dotted #ccc;
+}
+
 </style>
-<svg width="1200" height="800"></svg>
+<!--<svg width="1200" height="1000"></svg>-->
+<body></body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.3/d3.min.js"></script>
+<script src="https://unpkg.com/d3-force-attract@latest"></script>
+
 <script>
 
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+var container = d3.select('body')
+                  .append('div')
+                    .attr('id','container')
+// console.log(container)
+
+var svg = container.append('svg')
+                   .attr('id', 'svg')
+// console.log(svg)
+// var svg = d3.select("svg")
+// console.log("bbox1 ", svg.node().getBBox())
+// console.log("bbox2 ", svg.node().getBoundingClientRect())
+const bbox = svg.node().getBoundingClientRect()
+
+var width = +bbox.width,
+    height = +bbox.height;
+
+
+function positioner(node) {
+  const blocksPerRow = 12
+  const blockSize = width/blocksPerRow
+  const x = ((node.nodeGroup % blocksPerRow) + 0.5) * blockSize
+  const y = (Math.floor(node.nodeGroup / blocksPerRow) + 0.5) * blockSize
+  return [x,y]
+}
 
 var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))  // .distance(5)
-    // .force("charge", d3.forceManyBody().strength(0))
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))  //.distance(5)
+    // .force("charge", d3.forceManyBody().strength(15))
     .force("collide", d3.forceCollide(15))
-    .force("center", d3.forceCenter(width / 2, height / 2));
+    .force("attract", d3.forceAttract()
+                        .target(positioner)
+                        .strength(0.2)
+           ); //d3.forceCenter(width / 2, height / 2));
 
-d3.json("data2.json", function(error, graph) {
+d3.json("data3.json", function(error, graph) {
   if (error) throw error;
+
+  graph.nodes.forEach(node => {
+    let [x, y] = positioner(node)
+    node.x = x; node.y = y
+  });
+
+  // let newNodes = []
+  // graph.nodes.forEach(node => {
+  //   if (node.groupSize > 1) {
+  //     let [x, y] = positioner(node)
+  //     node.x = x; node.y = y
+  //     newNodes.push(node)
+  //   }
+  // });
+  // graph.nodes = newNodes
 
   var link = svg.append("g")
       .attr("class", "links")
@@ -104,20 +159,6 @@ d3.json("data2.json", function(error, graph) {
   .attr("cx", 5)
   .attr("r", 5);
 /// END
-
-
-
-    // simulation.force("haslinks", function(alpha) {
-    //   // console.log(graph.nodes.length);
-    //   for (var i = 0, len = graph.nodes.length; i < len; ++i) {
-    //     // console.log(n.id);
-    //     var n = graph.nodes[i];
-    //     k = 0.02 * alpha;
-    //     // console.log(k);
-    //     n.x -= (n.x - n.id/25) * k;
-    //     // n.y += (n.y - n.id/25) * k;
-    //   }
-    // } )
 
   node.append("title")
       .text(function(d) { return d.id; });
