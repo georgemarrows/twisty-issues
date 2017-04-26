@@ -1,0 +1,27 @@
+{
+  "name": "twisty-issues",
+  "description": "Help navigating Github issue cross-references",
+  "keywords": [
+    "github",
+    "issues"
+  ],
+  "version": "0.0.1",
+  "author": "George Marrows <george.marrows@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/georgemarrows/twisty-issues"
+  },
+  "bugs": {
+    "url": "https://github.com/georgemarrows/twisty-issues/issues"
+  },
+  "license": "GPL 3",
+  "engines": {
+    "node": ">= 4"
+  },
+  "main": "extract.js",
+  "dependencies": {
+    "async": "^2.1.5",
+    "mz": "^2.6.0",
+    "octokat": "^0.6.3"
+  }
+}

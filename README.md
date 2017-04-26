@@ -8,7 +8,8 @@ FIXME screenshot here!
 ## To run
 
 * ```export GITHUB_TOKEN=<a Github access token>```
-* ```ruby extract.rb >data.json```
+* ```node extract.js```
+* ```node process.js >data3.json```
 * ```npm install -g http-server```
 * ```http-server```
 * Navigate to http:/localhost:8080 in your browser
